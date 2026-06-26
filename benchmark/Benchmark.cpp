@@ -17,6 +17,7 @@ void Benchmark::run(
     const string& csvFile
 )
 {
+
     cout
         << "\n==============================\n";
 
@@ -45,10 +46,10 @@ void Benchmark::run(
            ).count()
         << " ms\n\n";
 
-
-
     auto records =
         db.getAllRecords();
+
+    int ITERATIONS = min(1000, (int)records.size());
 
     cout
         << "Registros: "
@@ -57,8 +58,11 @@ void Benchmark::run(
     start =
     high_resolution_clock::now();
 
-    for(const auto& r : records)
+    for(int i = 0; i < ITERATIONS; i++)
     {
+        const auto& r =
+            records[i % records.size()];
+
         db.findById(r.id);
     }
 
@@ -76,8 +80,11 @@ void Benchmark::run(
     start =
         high_resolution_clock::now();
 
-    for(const auto& target : records)
+    for(int i = 0; i < ITERATIONS; i++)
     {
+        const auto& target =
+            records[i % records.size()];
+
         for(const auto& r : records)
         {
             linearVisited++;
@@ -106,11 +113,14 @@ void Benchmark::run(
         records.size() / 2
     ].score;
 
+
     db.getScoreIndex()
-    .resetVisited();
+.resetVisited();
 
     start =
         high_resolution_clock::now();
+
+    db.getScoreIndex().search(score);
 
 
     end =
@@ -160,20 +170,19 @@ void Benchmark::run(
     .resetVisited();
 
 
-    double minScore =
-    records[0].score;
 
-    double maxScore =
-        records[0].score;
 
-    for(const auto& r : records)
+    auto [minIt, maxIt] = minmax_element(
+    records.begin(),
+    records.end(),
+    [](const auto& a, const auto& b)
     {
-        if(r.score < minScore)
-            minScore = r.score;
-
-        if(r.score > maxScore)
-            maxScore = r.score;
+        return a.score < b.score;
     }
+);
+
+    double minScore = minIt->score;
+    double maxScore = maxIt->score;
 
     double low =
         minScore +
@@ -186,10 +195,7 @@ void Benchmark::run(
     start =
         high_resolution_clock::now();
 
-    db.findBetween(
-    low,
-    high
-);
+    auto result = db.findBetween(low, high);
 
     end =
         high_resolution_clock::now();
@@ -211,15 +217,15 @@ void Benchmark::run(
     start =
         high_resolution_clock::now();
 
+    vector<Record> linearResult;
+
     for(const auto& r : records)
     {
         linearVisited++;
 
-        if(
-            r.score >= low &&
-            r.score <= high
-        )
+        if(r.score >= low && r.score <= high)
         {
+            linearResult.push_back(r);
         }
     }
 
@@ -345,23 +351,16 @@ void Benchmark::run(
                .getVisited()
         << "\n";
 
-    start =
-    high_resolution_clock::now();
+    vector<double> temp = scores;
 
-    sort(
-        scores.begin(),
-        scores.end()
-    );
+    start = high_resolution_clock::now();
 
-    int pos =
-        (90 * (scores.size() - 1))
-        / 100;
+    sort(temp.begin(), temp.end());
 
-    double p90Linear =
-        scores[pos];
+    int pos = (90 * (temp.size() - 1)) / 100;
+    double p90Linear = temp[pos];
 
-    end =
-        high_resolution_clock::now();
+    end = high_resolution_clock::now();
 
     cout
         << "Percentil 90 (Lineal): "
