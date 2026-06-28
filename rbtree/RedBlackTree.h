@@ -20,6 +20,8 @@ private:
 
     long long visitedNodes;
 
+    std::vector<RBNode*> lastVisitedNodes;
+
 public:
 
     RedBlackTree();
@@ -84,6 +86,16 @@ public:
     void resetVisited();
 
     long long getVisited() const;
+
+    const std::vector<RBNode*>& getVisitedNodes() const
+    {
+        return lastVisitedNodes;
+    }
+
+    RBNode* getNIL()
+    {
+        return NIL;
+    }
 
 private:
 
@@ -162,6 +174,16 @@ private:
             node->right,
             result
         );
+    }
+
+    void visitNode(RBNode* node)
+    {
+        if(node == NIL)
+            return;
+
+        visitedNodes++;
+
+        lastVisitedNodes.push_back(node);
     }
 
 };

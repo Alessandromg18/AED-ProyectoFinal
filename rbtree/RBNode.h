@@ -24,6 +24,9 @@ struct RBNode {
 
     int subtreeSize;
 
+    float x;
+    float y;
+
     RBNode(
         double key
     )
@@ -32,7 +35,9 @@ struct RBNode {
           left(nullptr),
           right(nullptr),
           parent(nullptr),
-          subtreeSize(0)
+          subtreeSize(0),
+          x(0.f),
+          y(0.f)
     {}
 };
 
