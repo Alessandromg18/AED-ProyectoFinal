@@ -10,6 +10,9 @@ RedBlackTree::RedBlackTree() {
 
     visitedNodes = 0;
 
+
+    lastVisitedNodes.clear();
+
     NIL = new RBNode(0);
 
     NIL->color = BLACK;
@@ -48,15 +51,15 @@ void RedBlackTree::updateToRoot(
     }
 }
 
-RBNode* RedBlackTree::search(
-    double key
-) {
+RBNode* RedBlackTree::search(double key)
+{
+    resetVisited();
 
     RBNode* current = root;
 
-    while(current != NIL) {
-
-        visitedNodes++;
+    while(current != NIL)
+    {
+        visitNode(current);
 
         if(key == current->key)
             return current;
@@ -290,7 +293,7 @@ RBNode* RedBlackTree::selectNode(
     if(node == NIL)
         return NIL;
 
-    visitedNodes++;
+    visitNode(node);
 
     int leftSize =
         node->left->subtreeSize;
@@ -306,9 +309,7 @@ RBNode* RedBlackTree::selectNode(
         );
     }
 
-    if(
-        k <= leftSize + currentCount
-    )
+    if(k <= leftSize + currentCount)
     {
         return node;
     }
@@ -323,6 +324,8 @@ double RedBlackTree::select(
     int k
 )
 {
+    resetVisited();
+
     if(
         root == NIL ||
         k <= 0 ||
@@ -344,13 +347,15 @@ int RedBlackTree::rank(
     double key
 )
 {
+    resetVisited();
+
     RBNode* current = root;
 
     int rankValue = 0;
 
     while(current != NIL)
     {
-        visitedNodes++;
+        visitNode(current);
 
         if(key < current->key)
         {
@@ -382,6 +387,8 @@ int RedBlackTree::rank(
 
 double RedBlackTree::median()
 {
+    resetVisited();
+
     if(root == NIL)
     {
         throw std::runtime_error(
@@ -411,6 +418,8 @@ double RedBlackTree::median()
 
 double RedBlackTree::percentile(double p)
 {
+    resetVisited();
+
     if (p < 0 || p > 100)
     {
         throw std::invalid_argument("Percentil invalido");
@@ -434,6 +443,8 @@ int RedBlackTree::countRange(
     double high
 )
 {
+    resetVisited();
+
     const double EPS =
         0.0000001;
 
@@ -452,8 +463,7 @@ void RedBlackTree::rangeQueryRecursive(
     if(node == NIL)
         return;
 
-    visitedNodes++;
-
+    visitNode(node);
     if(node->key > low)
     {
         rangeQueryRecursive(
@@ -494,6 +504,8 @@ std::vector<int> RedBlackTree::rangeQuery(
     double high
 )
 {
+    resetVisited();
+
     std::vector<int> result;
 
     rangeQueryRecursive(
@@ -511,6 +523,8 @@ bool RedBlackTree::remove(
     int rowId
 )
 {
+    resetVisited();
+
     RBNode* z = search(key);
 
     if(z == nullptr)
@@ -536,6 +550,7 @@ void RedBlackTree::removeNode(
     RBNode* z
 )
 {
+    resetVisited();
     RBNode* y = z;
 
     RBNode* x;
@@ -872,9 +887,11 @@ void RedBlackTree::clear()
 void RedBlackTree::resetVisited()
 {
     visitedNodes = 0;
+    lastVisitedNodes.clear();
 }
 
 long long RedBlackTree::getVisited() const
 {
     return visitedNodes;
 }
+

@@ -3,6 +3,9 @@
 //
 
 #include "Database.h"
+
+#include <algorithm>
+
 #include "../csv/CSVLoader.h"
 
 Database::Database()
@@ -258,5 +261,151 @@ std::vector<Record>
 Database::getAllRecords() const
 {
     return records.getValues();
+}
+
+std::vector<Record> Database::linearFindById(
+    int id
+)
+{
+    std::vector<Record> result;
+
+    auto all = getAllRecords();
+
+    for(const auto& r : all)
+    {
+        if(r.id == id)
+        {
+            result.push_back(r);
+            break;
+        }
+    }
+
+    return result;
+}
+
+std::vector<Record> Database::linearFindBetween(
+    double low,
+    double high
+)
+{
+    std::vector<Record> result;
+
+    auto all = getAllRecords();
+
+    for(const auto& r : all)
+    {
+        if(r.score >= low && r.score <= high)
+            result.push_back(r);
+    }
+
+    return result;
+}
+
+std::vector<Record> Database::linearTopK(
+    int k
+)
+{
+    auto allRecords = getAllRecords();
+
+    std::sort(
+        allRecords.begin(),
+        allRecords.end(),
+        [](const Record& a, const Record& b)
+        {
+            return a.score > b.score;
+        }
+    );
+
+    if(k > allRecords.size())
+        k = allRecords.size();
+
+    return std::vector<Record>(
+        allRecords.begin(),
+        allRecords.begin() + k
+    );
+}
+
+double Database::linearMedianScore()
+{
+    auto allRecords = getAllRecords();
+
+    if(allRecords.empty())
+        return 0.0;
+
+    std::vector<double> scores;
+
+    for(const auto& record : allRecords)
+    {
+        scores.push_back(
+            record.score
+        );
+    }
+
+    std::sort(
+        scores.begin(),
+        scores.end()
+    );
+
+    int n = scores.size();
+
+    if(n % 2 == 1)
+    {
+        return scores[n / 2];
+    }
+
+    return (
+        scores[n / 2 - 1] +
+        scores[n / 2]
+    ) / 2.0;
+}
+
+std::vector<Record> Database::linearBottomK(
+    int k
+)
+{
+    auto all = getAllRecords();
+
+    std::sort(
+        all.begin(),
+        all.end(),
+        [](const Record& a, const Record& b)
+        {
+            return a.score < b.score; // menor a mayor
+        }
+    );
+
+    if(k > all.size())
+        k = all.size();
+
+    return std::vector<Record>(
+        all.begin(),
+        all.begin() + k
+    );
+}
+
+double Database::linearPercentileScore(
+    double p
+)
+{
+    auto all = getAllRecords();
+
+    if(all.empty())
+        return 0.0;
+
+    std::sort(
+        all.begin(),
+        all.end(),
+        [](const Record& a, const Record& b)
+        {
+            return a.score < b.score;
+        }
+    );
+
+    int index =
+        static_cast<int>(
+            (p / 100.0) * (all.size() - 1)
+        );
+
+    return all[index].score;
 }
 

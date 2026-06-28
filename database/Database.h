@@ -83,8 +83,31 @@ public:
 
     std::vector<Record> getAllRecords() const;
 
+    std::vector<Record> linearFindById(
+    int id
+);
 
+    std::vector<Record> linearFindBetween(
+        double low,
+        double high
+    );
+
+    std::vector<Record> linearTopK(
+    int k
+    );
+
+    double linearMedianScore();
+
+    std::vector<Record> linearBottomK(
+    int k
+);
+
+    double linearPercentileScore(
+        double p
+    );
 
 };
+
+
 
 #endif //DATABASE_H
