@@ -13,7 +13,7 @@ RBVisualizer::RBVisualizer()
     : window(sf::VideoMode({1200, 700}), "Red Black Tree Visualizer"),
       camera(window.getDefaultView())
 {
-    if(!font.openFromFile("assets/fonts/ARIAL.ttf"))
+    if(!font.openFromFile("assets/fonts/ARIAL.TTF"))
     {
         std::cout << "Error loading font\n";
     }

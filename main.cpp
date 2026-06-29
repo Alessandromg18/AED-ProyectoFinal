@@ -1,24 +1,43 @@
 #include <iostream>
+#include <limits>
 #include <string>
 
 #include "benchmark/Benchmark.h"
 #include "database/Database.h"
 #include "visualization/RBVisualizer.h"
 
-int main()
-{
+static bool readOption(int minOption, int maxOption, int& option) {
+    if(!(std::cin >> option)) {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        return false;
+    }
+
+    if(option < minOption || option > maxOption) {
+        return false;
+    }
+
+    return true;
+}
+
+int main() {
+
     Database db;
 
-    int startOption;
+    int startOption = 0;
 
     std::cout << "==============================\n";
-    std::cout << " MINI DATABASE SYSTEM\n";
+    std::cout << " SISTEMA DE BASE DE DATOS MINI\n";
     std::cout << "==============================\n";
-    std::cout << "1. Load dataset\n";
-    std::cout << "2. Start empty database\n";
-    std::cout << "Option: ";
+    std::cout << "Escriba una opcion:\n";
+    std::cout << "1. Cargar dataset\n";
+    std::cout << "2. Empezar con un dataset vacio\n";
+    std::cout << "Opcion: ";
 
-    std::cin >> startOption;
+    if(!readOption(1, 2, startOption)) {
+        std::cout << "Opcion invalida.\n";
+        return 1;
+    }
 
     std::string datasetPath;
 
@@ -26,21 +45,22 @@ int main()
     // DATASET SELECTION
     // =========================
 
-    if(startOption == 1)
-    {
-        int datasetOption;
+    if(startOption == 1) {
+        int datasetOption = 0;
 
-        std::cout << "\nChoose dataset:\n";
-        std::cout << "1. 1K\n";
-        std::cout << "2. 10K\n";
-        std::cout << "3. 100K\n";
-        std::cout << "4. 1M\n";
-        std::cout << "Option: ";
+        std::cout << "\nElige tu dataset:\n";
+        std::cout << "1. 1K datos\n";
+        std::cout << "2. 10K datos\n";
+        std::cout << "3. 100K datos\n";
+        std::cout << "4. 1M datos\n";
+        std::cout << "Opcion: ";
 
-        std::cin >> datasetOption;
+        if(!readOption(1, 4, datasetOption)) {
+            std::cout << "Opcion invalida.\n";
+                return 1;
+        }
 
-        switch(datasetOption)
-        {
+        switch(datasetOption) {
             case 1:
                 datasetPath = "../data/dataset_1000.csv";
                 break;
@@ -56,38 +76,29 @@ int main()
             case 4:
                 datasetPath = "../data/dataset_1000000.csv";
                 break;
-
-            default:
-                std::cout << "Invalid dataset option.\n";
-                return 1;
         }
 
-        try
-        {
-            std::cout << "\nLoading dataset...\n";
+        try {
+            std::cout << "\nCargando dataset...\n";
 
             db.loadCSV(datasetPath);
 
             std::cout
-                << "Loaded records: "
+                << "Registros cargados: "
                 << db.totalRecords()
                 << "\n";
         }
-        catch(const std::exception& e)
-        {
+        catch(const std::exception& e) {
             std::cout
-                << "Error loading CSV: "
+                << "Error cargando CSV: "
                 << e.what()
                 << "\n";
 
             return 1;
         }
-    }
-
-    else if(startOption == 2)
-    {
-        std::cout
-            << "\nStarting with demo database...\n";
+    } 
+    else if(startOption == 2) {
+        std::cout << "\nCreando un dataset nuevo...\n";
 
         db.insertRecord({
             1, "Alice", 20, 85.5, "A"
@@ -129,15 +140,10 @@ int main()
             10, "Jack", 22, 72.0, "C"
         });
 
-        std::cout
-            << "Loaded demo records: "
-            << db.totalRecords()
-            << "\n";
+        std::cout << "Registros cargados: " << db.totalRecords() << "\n";
     }
-
-    else
-    {
-        std::cout << "Invalid option.\n";
+    else {
+        std::cout << "Opcion invalida.\n";
         return 1;
     }
 
@@ -145,49 +151,43 @@ int main()
     // EXECUTION MODE
     // =========================
 
-    int mode;
+    int mode = 0;
 
-    std::cout << "\nChoose mode:\n";
-    std::cout << "1. Visualization\n";
+    std::cout << "\nEsocger modo:\n";
+    std::cout << "1. Visualizacion\n";
     std::cout << "2. Benchmark\n";
-    std::cout << "Option: ";
+    std::cout << "Opcion: ";
 
-    std::cin >> mode;
+    if(!readOption(1, 2, mode)) {
+        std::cout << "Opcion invalida.\n";
+        return 1;
+    }
 
     // =========================
     // VISUALIZATION
     // =========================
 
-    if(mode == 1)
-    {
+    if(mode == 1) {
         RBVisualizer viz;
 
         viz.setDatabase(db);
 
-        viz.show(
-            db.getScoreIndex()
-        );
+        viz.show(db.getScoreIndex());
     }
-
     // =========================
     // BENCHMARK
     // =========================
-
-    else if(mode == 2)
-    {
-        if(datasetPath.empty())
-        {
+    else if(mode == 2) {
+        if(datasetPath.empty()) {
             std::cout
-                << "Benchmark requires a dataset.\n";
+                << "Benchmark requiere un dataset.\n";
 
             return 1;
         }
-
         Benchmark::run(datasetPath);
     }
-    else
-    {
-        std::cout << "Invalid mode.\n";
+    else {
+        std::cout << "Opcion invalida.\n";
         return 1;
     }
 

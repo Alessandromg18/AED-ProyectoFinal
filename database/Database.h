@@ -25,55 +25,32 @@ public:
 
     Database();
 
-    bool insertRecord(
-        const Record& record
-    );
+    bool insertRecord(const Record& record);
 
-    bool deleteRecord(
-        int id
-    );
+    bool deleteRecord(int id);
 
-    bool updateScore(
-        int id,
-        double newScore
-    );
+    bool updateScore(int id,double newScore);
 
-    Record* findById(
-        int id
-    );
+    Record* findById(int id);
 
-    std::vector<Record> findBetween(
-        double low,
-        double high
-    );
+    std::vector<Record> findBetween(double low, double high);
 
     double medianScore();
 
-    double percentileScore(
-        double p
-    );
+    double percentileScore(double p);
 
     int totalRecords();
 
-    bool contains(
-        int id
-    );
+    bool contains(int id);
 
-    std::vector<Record> topK(
-    int k
-);
-    std::vector<Record> bottomK(
-    int k
-);
+    std::vector<Record> topK(int k);
+    std::vector<Record> bottomK(int k);
 
-    RedBlackTree& getScoreIndex()
-    {
+    RedBlackTree& getScoreIndex() {
         return scoreIndex;
     }
 
-    void loadCSV(
-    const std::string& filename
-);
+    void loadCSV(const std::string& filename);
     void clear()
     {
         records.clear();
