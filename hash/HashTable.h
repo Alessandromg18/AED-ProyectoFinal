@@ -13,50 +13,33 @@
 using namespace std;
 
 template<typename Key>
-size_t base_hash(const Key& key)
-{
+size_t base_hash(const Key& key){
     return std::hash<Key>{}(key);
 }
 
 template<typename Key>
 class DivisionHash
 {
-public:
-
-    size_t operator()(
-        const Key& key,
-        size_t tableSize
-    ) const
+    public:
+    size_t operator()(const Key& key,size_t tableSize) const
     {
         return base_hash(key) % tableSize;
     }
 };
 
-template<
-    typename Key,
-    typename Value
->
+template<typename Key,typename Value>
 class HashTable
 {
+
 private:
 
     struct Node
     {
         Key key;
         Value value;
-
         Node* next;
 
-        Node(
-            const Key& k,
-            const Value& v,
-            Node* n = nullptr
-        )
-            :
-            key(k),
-            value(v),
-            next(n)
-        {}
+        Node(const Key& k,const Value& v,Node* n = nullptr):key(k),value(v),next(n){}
     };
 
     Node** table;
@@ -75,8 +58,7 @@ private:
     {
         capacity = cap;
 
-        table =
-            new Node*[capacity];
+        table = new Node*[capacity];
 
         for(size_t i=0;i<capacity;i++)
         {
@@ -88,16 +70,12 @@ private:
     {
         for(size_t i=0;i<capacity;i++)
         {
-            Node* current =
-                table[i];
-
+            Node* current = table[i];
             while(current)
             {
-                Node* temp =
-                    current;
+                Node* temp = current;
 
-                current =
-                    current->next;
+                current = current->next;
 
                 delete temp;
             }
@@ -108,30 +86,16 @@ private:
 
     bool needRehash() const
     {
-        double ff =
-            (double)(numElements + 1)
-            / capacity;
+        double ff = (double)(numElements + 1) / capacity;
 
         return ff > maxFillFactor;
     }
 
-    void insertAtHead(
-        const Key& key,
-        const Value& value
-    )
+    void insertAtHead(const Key& key,const Value& value)
     {
-        size_t index =
-            hashFunction(
-                key,
-                capacity
-            );
+        size_t index = hashFunction(key,capacity);
 
-        Node* node =
-            new Node(
-                key,
-                value,
-                table[index]
-            );
+        Node* node = new Node(key,value,table[index]);
 
         table[index] = node;
 
@@ -140,16 +104,13 @@ private:
 
     void rehash()
     {
-        size_t oldCapacity =
-            capacity;
+        size_t oldCapacity = capacity;
 
-        Node** oldTable =
-            table;
+        Node** oldTable = table;
 
         capacity *= 2;
 
-        table =
-            new Node*[capacity];
+        table = new Node*[capacity];
 
         for(size_t i=0;i<capacity;i++)
         {
@@ -160,21 +121,15 @@ private:
 
         for(size_t i=0;i<oldCapacity;i++)
         {
-            Node* current =
-                oldTable[i];
+            Node* current = oldTable[i];
 
             while(current)
             {
-                insertAtHead(
-                    current->key,
-                    current->value
-                );
+                insertAtHead(current->key,current->value);
 
-                Node* temp =
-                    current;
+                Node* temp = current;
 
-                current =
-                    current->next;
+                current = current->next;
 
                 delete temp;
             }
@@ -185,98 +140,61 @@ private:
 
 public:
 
-    HashTable(
-        size_t initialCapacity = 11,
-        double maxFF = 0.75
-    )
+    HashTable(size_t initialCapacity = 11,double maxFF = 0.75)
     {
         numElements = 0;
 
         maxFillFactor = maxFF;
 
-        initTable(
-            initialCapacity
-        );
+        initTable(initialCapacity);
     }
 
     ~HashTable()
     {
         clearBuckets();
-
         delete[] table;
     }
 
-    HashTable(
-        const HashTable&
-    ) = delete;
+    HashTable(const HashTable&) = delete;
 
-    HashTable& operator=(
-        const HashTable&
-    ) = delete;
+    HashTable& operator=(const HashTable&) = delete;
 
-    void insert(
-        const Key& key,
-        const Value& value
-    )
+    void insert(const Key& key,const Value& value)
     {
-        size_t index =
-            hashFunction(
-                key,
-                capacity
-            );
+        size_t index = hashFunction(key,capacity);
 
-        Node* current =
-            table[index];
+        Node* current = table[index];
 
         while(current)
         {
             if(current->key == key)
             {
-                current->value =
-                    value;
-
+                current->value = value;
                 return;
             }
 
-            current =
-                current->next;
+            current = current->next;
         }
 
         if(needRehash())
         {
             rehash();
 
-            index =
-                hashFunction(
-                    key,
-                    capacity
-                );
+            index = hashFunction(key,capacity);
         }
 
-        Node* node =
-            new Node(
-                key,
-                value,
-                table[index]
-            );
+        Node* node = new Node(key,value,table[index]);
 
         table[index] = node;
 
         numElements++;
     }
 
-    Value* search(
-        const Key& key
-    )
+    Value* search(const Key& key)
     {
-        size_t index =
-            hashFunction(
-                key,
-                capacity
-            );
+        size_t index = hashFunction(key,capacity);
 
-        Node* current =
-            table[index];
+        Node* current = table[index];
 
         while(current)
         {
@@ -285,25 +203,17 @@ public:
                 return &(current->value);
             }
 
-            current =
-                current->next;
+            current = current->next;
         }
 
         return nullptr;
     }
 
-    const Value* search(
-        const Key& key
-    ) const
+    const Value* search(const Key& key) const
     {
-        size_t index =
-            hashFunction(
-                key,
-                capacity
-            );
+        size_t index = hashFunction(key,capacity);
 
-        Node* current =
-            table[index];
+        Node* current = table[index];
 
         while(current)
         {
@@ -312,36 +222,24 @@ public:
                 return &(current->value);
             }
 
-            current =
-                current->next;
+            current = current->next;
         }
 
         return nullptr;
     }
 
-    bool contains(
-        const Key& key
-    ) const
+    bool contains(const Key& key) const
     {
-        return search(key)
-            != nullptr;
+        return search(key) != nullptr;
     }
 
-    bool remove(
-        const Key& key
-    )
+    bool remove(const Key& key)
     {
-        size_t index =
-            hashFunction(
-                key,
-                capacity
-            );
+        size_t index = hashFunction( key,capacity );
 
-        Node* current =
-            table[index];
+        Node* current = table[index];
 
-        Node* previous =
-            nullptr;
+        Node* previous = nullptr;
 
         while(current)
         {
@@ -349,13 +247,11 @@ public:
             {
                 if(previous == nullptr)
                 {
-                    table[index] =
-                        current->next;
+                    table[index] = current->next;
                 }
                 else
                 {
-                    previous->next =
-                        current->next;
+                    previous->next = current->next;
                 }
 
                 delete current;
@@ -365,23 +261,17 @@ public:
                 return true;
             }
 
-            previous =
-                current;
+            previous = current;
 
-            current =
-                current->next;
+            current = current->next;
         }
 
         return false;
     }
 
-    bool update(
-        const Key& key,
-        const Value& value
-    )
+    bool update(const Key& key,const Value& value)
     {
-        Value* ptr =
-            search(key);
+        Value* ptr = search(key);
 
         if(ptr == nullptr)
         {
@@ -410,35 +300,25 @@ public:
 
     double getFillFactor() const
     {
-        return
-            (double)numElements
-            / capacity;
+        return (double)numElements/ capacity;
     }
 
     vector<Key> getKeys() const
     {
         vector<Key> result;
 
-        result.reserve(
-            numElements
-        );
+        result.reserve(numElements);
 
         for(size_t i=0;i<capacity;i++)
         {
-            Node* current =
-                table[i];
+            Node* current = table[i];
 
             while(current)
             {
-                result.push_back(
-                    current->key
-                );
-
-                current =
-                    current->next;
+                result.push_back(current->key);
+                current = current->next;
             }
         }
-
         return result;
     }
 
@@ -446,33 +326,25 @@ public:
     {
         vector<Value> result;
 
-        result.reserve(
-            numElements
-        );
+        result.reserve(numElements);
 
         for(size_t i=0;i<capacity;i++)
         {
-            Node* current =
-                table[i];
+            Node* current = table[i];
 
             while(current)
             {
-                result.push_back(
-                    current->value
-                );
+                result.push_back(current->value);
 
-                current =
-                    current->next;
+                current = current->next;
             }
         }
-
         return result;
     }
 
     void clear()
     {
         clearBuckets();
-
         numElements = 0;
     }
 

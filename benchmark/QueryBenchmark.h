@@ -13,41 +13,23 @@ class QueryBenchmark
 {
 public:
 
-    static QueryResult searchById(
-        Database& db,
-        int id
-    );
+    static QueryResult searchById(Database& db,int id);
 
-    static QueryResult rangeSearch(
-        Database& db,
-        double min,
-        double max
-    );
+    static QueryResult rangeSearch(Database& db,double min,double max);
 
-    static QueryResult topK(
-        Database& db,
-        int k
-    );
+    static QueryResult topK(Database& db,int k);
 
-    static QueryResult median(
-        Database& db
-    );
+    static QueryResult median(Database& db);
 
-    static QueryResult equalitySearch(
-    Database& db,
-    double score
-);
+    static QueryResult equalitySearch(Database& db,double score);
 
-    static QueryResult percentile(
-        Database& db,
-        double p
-    );
+    static QueryResult percentile(Database& db,double p);
 
-    static QueryResult bottomK(
-        Database& db,
-        int k
-    );
+    static QueryResult bottomK(Database& db,int k);
 
+    static QueryResult countRange(Database& db,double min,double max);
+
+    static QueryResult rank(Database& db,double key);
 
 };
 

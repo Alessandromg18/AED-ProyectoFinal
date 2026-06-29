@@ -10,7 +10,6 @@ RedBlackTree::RedBlackTree() {
 
     visitedNodes = 0;
 
-
     lastVisitedNodes.clear();
 
     NIL = new RBNode(0);
@@ -26,30 +25,23 @@ RedBlackTree::RedBlackTree() {
     root = NIL;
 }
 
-void RedBlackTree::updateSize(
-    RBNode* node
-) {
+void RedBlackTree::updateSize(RBNode* node) {
 
     if(node == NIL)
         return;
 
-    node->subtreeSize =
-        node->left->subtreeSize +
-        node->rowIds.size() +
-        node->right->subtreeSize;
+    // FORMULA IMPORTANTE :
+    node->subtreeSize = node->left->subtreeSize + node->rowIds.size() +node->right->subtreeSize;
 }
 
-void RedBlackTree::updateToRoot(
-    RBNode* node
-) {
+void RedBlackTree::updateToRoot(RBNode* node) {
 
     while(node != NIL) {
-
         updateSize(node);
-
         node = node->parent;
     }
 }
+
 
 RBNode* RedBlackTree::search(double key)
 {
@@ -129,10 +121,7 @@ void RedBlackTree::rightRotate(RBNode* y)
     updateSize(x);
 }
 
-void RedBlackTree::insert(
-    double key,
-    int rowId
-)
+void RedBlackTree::insert(double key,int rowId)
 {
     RBNode* current = root;
     RBNode* parent = NIL;
@@ -144,9 +133,7 @@ void RedBlackTree::insert(
         if(key == current->key)
         {
             current->rowIds.insert(rowId);
-
             updateToRoot(current);
-
             return;
         }
 
@@ -176,7 +163,6 @@ void RedBlackTree::insert(
         parent->right = z;
 
     updateToRoot(parent);
-
     fixInsert(z);
 }
 
@@ -186,16 +172,14 @@ void RedBlackTree::fixInsert(RBNode* z)
     {
         if(z->parent == z->parent->parent->left)
         {
-            RBNode* y =
-                z->parent->parent->right;
+            RBNode* y = z->parent->parent->right;
 
             if(y->color == RED)
             {
                 z->parent->color = BLACK;
                 y->color = BLACK;
 
-                z->parent->parent->color =
-                    RED;
+                z->parent->parent->color = RED;
 
                 z = z->parent->parent;
             }
@@ -204,33 +188,27 @@ void RedBlackTree::fixInsert(RBNode* z)
                 if(z == z->parent->right)
                 {
                     z = z->parent;
-
                     leftRotate(z);
                 }
 
                 z->parent->color = BLACK;
 
-                z->parent->parent->color =
-                    RED;
+                z->parent->parent->color = RED;
 
-                rightRotate(
-                    z->parent->parent
-                );
+                rightRotate(z->parent->parent);
             }
         }
+
         else
         {
-            RBNode* y =
-                z->parent->parent->left;
+            RBNode* y = z->parent->parent->left;
 
-            if(y->color == RED)
-            {
+            if(y->color == RED){
                 z->parent->color = BLACK;
 
                 y->color = BLACK;
 
-                z->parent->parent->color =
-                    RED;
+                z->parent->parent->color = RED;
 
                 z = z->parent->parent;
             }
@@ -239,18 +217,14 @@ void RedBlackTree::fixInsert(RBNode* z)
                 if(z == z->parent->left)
                 {
                     z = z->parent;
-
                     rightRotate(z);
                 }
 
                 z->parent->color = BLACK;
 
-                z->parent->parent->color =
-                    RED;
+                z->parent->parent->color = RED;
 
-                leftRotate(
-                    z->parent->parent
-                );
+                leftRotate(z->parent->parent);
             }
         }
     }
@@ -258,20 +232,14 @@ void RedBlackTree::fixInsert(RBNode* z)
     root->color = BLACK;
 }
 
-RBNode* RedBlackTree::minimum(
-    RBNode* node
-)
+RBNode* RedBlackTree::minimum(RBNode* node)
 {
     while(node->left != NIL)
         node = node->left;
-
     return node;
 }
 
-void RedBlackTree::transplant(
-    RBNode* u,
-    RBNode* v
-)
+void RedBlackTree::transplant(RBNode* u,RBNode* v)
 {
     if(u->parent == NIL)
         root = v;
@@ -285,28 +253,20 @@ void RedBlackTree::transplant(
     v->parent = u->parent;
 }
 
-RBNode* RedBlackTree::selectNode(
-    RBNode* node,
-    int k
-)
+RBNode* RedBlackTree::selectNode(RBNode* node,int k)
 {
     if(node == NIL)
         return NIL;
 
     visitNode(node);
 
-    int leftSize =
-        node->left->subtreeSize;
+    int leftSize = node->left->subtreeSize;
 
-    int currentCount =
-        node->rowIds.size();
+    int currentCount = node->rowIds.size();
 
     if(k <= leftSize)
     {
-        return selectNode(
-            node->left,
-            k
-        );
+        return selectNode(node->left,k);
     }
 
     if(k <= leftSize + currentCount)
@@ -314,38 +274,24 @@ RBNode* RedBlackTree::selectNode(
         return node;
     }
 
-    return selectNode(
-        node->right,
-        k - leftSize - currentCount
-    );
+    return selectNode(node->right,k - leftSize - currentCount);
 }
 
-double RedBlackTree::select(
-    int k
-)
+double RedBlackTree::select(int k)
 {
     resetVisited();
 
-    if(
-        root == NIL ||
-        k <= 0 ||
-        k > root->subtreeSize
-    )
+    if(root == NIL || k <= 0 || k > root->subtreeSize)
     {
-        throw std::out_of_range(
-            "k invalido"
-        );
+        throw std::out_of_range("k invalido");
     }
 
-    RBNode* result =
-        selectNode(root, k);
+    RBNode* result = selectNode(root, k);
 
     return result->key;
 }
 
-int RedBlackTree::rank(
-    double key
-)
+int RedBlackTree::rank(double key)
 {
     resetVisited();
 
@@ -359,25 +305,19 @@ int RedBlackTree::rank(
 
         if(key < current->key)
         {
-            current =
-                current->left;
+            current = current->left;
         }
         else if(key > current->key)
         {
-            rankValue +=
-                current->left->subtreeSize;
+            rankValue += current->left->subtreeSize;
 
-            rankValue +=
-                current->rowIds.size();
+            rankValue += current->rowIds.size();
 
-            current =
-                current->right;
+            current = current->right;
         }
         else
         {
-            rankValue +=
-                current->left->subtreeSize;
-
+            rankValue += current->left->subtreeSize;
             return rankValue;
         }
     }
@@ -391,29 +331,21 @@ double RedBlackTree::median()
 
     if(root == NIL)
     {
-        throw std::runtime_error(
-            "Arbol vacio"
-        );
+        throw std::runtime_error("Arbol vacio");
     }
 
-    int n =
-        root->subtreeSize;
+    int n = root->subtreeSize;
 
     if(n % 2 == 1)
     {
-        return select(
-            (n + 1) / 2
-        );
+        return select((n + 1) / 2);
     }
 
-    double left =
-        select(n / 2);
+    double left = select(n / 2);
 
-    double right =
-        select(n / 2 + 1);
+    double right = select(n / 2 + 1);
 
-    return
-        (left + right) / 2.0;
+    return (left + right) / 2.0;
 }
 
 double RedBlackTree::percentile(double p)
@@ -438,49 +370,30 @@ double RedBlackTree::percentile(double p)
     return select(k);
 }
 
-int RedBlackTree::countRange(
-    double low,
-    double high
-)
+int RedBlackTree::countRange(double low,double high)
 {
     resetVisited();
 
-    const double EPS =
-        0.0000001;
+    const double EPS = 0.0000001;
 
-    return
-        rank(high + EPS)
-        - rank(low);
+    return rank(high + EPS) - rank(low);
 }
 
-void RedBlackTree::rangeQueryRecursive(
-    RBNode* node,
-    double low,
-    double high,
-    std::vector<int>& result
-)
+void RedBlackTree::rangeQueryRecursive(RBNode* node,double low,double high,std::vector<int>& result)
 {
     if(node == NIL)
         return;
 
     visitNode(node);
+
     if(node->key > low)
     {
-        rangeQueryRecursive(
-            node->left,
-            low,
-            high,
-            result
-        );
+        rangeQueryRecursive(node->left,low,high,result);
     }
 
-    if(
-        node->key >= low &&
-        node->key <= high
-    )
+    if(node->key >= low &&node->key <= high)
     {
-        std::vector<int> ids =
-            node->rowIds.toVector();
+        std::vector<int> ids = node->rowIds.toVector();
 
         for(int id : ids)
         {
@@ -490,38 +403,22 @@ void RedBlackTree::rangeQueryRecursive(
 
     if(node->key < high)
     {
-        rangeQueryRecursive(
-            node->right,
-            low,
-            high,
-            result
-        );
+        rangeQueryRecursive(node->right,low,high,result);
     }
 }
 
-std::vector<int> RedBlackTree::rangeQuery(
-    double low,
-    double high
-)
+std::vector<int> RedBlackTree::rangeQuery(double low,double high)
 {
     resetVisited();
 
     std::vector<int> result;
 
-    rangeQueryRecursive(
-        root,
-        low,
-        high,
-        result
-    );
+    rangeQueryRecursive(root,low,high,result);
 
     return result;
 }
 
-bool RedBlackTree::remove(
-    double key,
-    int rowId
-)
+bool RedBlackTree::remove(double key,int rowId)
 {
     resetVisited();
 
@@ -542,50 +439,35 @@ bool RedBlackTree::remove(
     }
 
     removeNode(z);
-
     return true;
 }
 
-void RedBlackTree::removeNode(
-    RBNode* z
-)
+void RedBlackTree::removeNode(RBNode* z)
 {
     resetVisited();
     RBNode* y = z;
-
     RBNode* x;
 
-    Color originalColor =
-        y->color;
+    Color originalColor = y->color;
 
     if(z->left == NIL)
     {
         x = z->right;
-
-        transplant(
-            z,
-            z->right
-        );
+        transplant(z,z->right);
     }
     else if(z->right == NIL)
     {
         x = z->left;
 
-        transplant(
-            z,
-            z->left
-        );
+        transplant(z,z->left);
     }
     else
     {
-        y =
-            minimum(z->right);
+        y = minimum(z->right);
 
-        originalColor =
-            y->color;
+        originalColor = y->color;
 
-        x =
-            y->right;
+        x = y->right;
 
         if(y->parent == z)
         {
@@ -593,198 +475,138 @@ void RedBlackTree::removeNode(
         }
         else
         {
-            transplant(
-                y,
-                y->right
-            );
+            transplant(y,y->right);
 
-            y->right =
-                z->right;
+            y->right = z->right;
 
-            y->right->parent =
-                y;
+            y->right->parent = y;
         }
-
         transplant(z,y);
 
-        y->left =
-            z->left;
+        y->left = z->left;
 
-        y->left->parent =
-            y;
+        y->left->parent = y;
 
-        y->color =
-            z->color;
+        y->color = z->color;
 
         updateSize(y);
     }
+
     delete z;
 
-    updateToRoot(
-        x->parent
-    );
+    updateToRoot(x->parent);
 
-    if(
-        originalColor ==
-        BLACK
-    )
+    if(originalColor == BLACK)
     {
         fixDelete(x);
     }
 }
 
-void RedBlackTree::fixDelete(
-    RBNode* x
-)
+void RedBlackTree::fixDelete(RBNode* x)
 {
-    while(
-        x != root &&
-        x->color == BLACK
-    )
+    while(x != root && x->color == BLACK)
     {
-        if(
-            x == x->parent->left
-        )
+        if(x == x->parent->left)
         {
-            RBNode* w =
-                x->parent->right;
+            RBNode* w = x->parent->right;
 
             // CASO 1
-            if(
-                w->color == RED
-            )
+
+            if(w->color == RED)
             {
                 w->color = BLACK;
 
                 x->parent->color = RED;
 
-                leftRotate(
-                    x->parent
-                );
+                leftRotate(x->parent);
 
-                w =
-                    x->parent->right;
+                w = x->parent->right;
             }
 
             // CASO 2
-            if(
-                w->left->color == BLACK &&
-                w->right->color == BLACK
-            )
+
+            if(w->left->color == BLACK && w->right->color == BLACK)
             {
                 w->color = RED;
-
-                x =
-                    x->parent;
+                x = x->parent;
             }
 
             else
             {
                 // CASO 3
-                if(
-                    w->right->color == BLACK
-                )
-                {
-                    w->left->color =
-                        BLACK;
 
-                    w->color =
-                        RED;
+                if(w->right->color == BLACK)
+                {
+                    w->left->color = BLACK;
+
+                    w->color = RED;
 
                     rightRotate(w);
 
-                    w =
-                        x->parent->right;
+                    w = x->parent->right;
                 }
 
                 // CASO 4
-                w->color =
-                    x->parent->color;
 
-                x->parent->color =
-                    BLACK;
+                w->color = x->parent->color;
 
-                w->right->color =
-                    BLACK;
+                x->parent->color = BLACK;
 
-                leftRotate(
-                    x->parent
-                );
+                w->right->color = BLACK;
+
+                leftRotate(x->parent);
 
                 x = root;
             }
         }
+
         else
         {
-            RBNode* w =
-                x->parent->left;
+            RBNode* w = x->parent->left;
 
-            // CASO 1 ESPEJO
+            // CASO 1
 
-            if(
-                w->color == RED
-            )
+            if(w->color == RED)
             {
                 w->color = BLACK;
+                x->parent->color = RED;
 
-                x->parent->color =
-                    RED;
+                rightRotate(x->parent);
 
-                rightRotate(
-                    x->parent
-                );
-
-                w =
-                    x->parent->left;
+                w = x->parent->left;
             }
 
-            // CASO 2 ESPEJO
+            // CASO 2
 
-            if(
-                w->right->color == BLACK &&
-                w->left->color == BLACK
-            )
+            if(w->right->color == BLACK && w->left->color == BLACK)
             {
                 w->color = RED;
-
-                x =
-                    x->parent;
+                x = x->parent;
             }
 
             else
-            {
-                // CASO 3 ESPEJO
+            { // CASO 3
 
-                if(
-                    w->left->color == BLACK
-                )
+                if(w->left->color == BLACK)
                 {
-                    w->right->color =
-                        BLACK;
+                    w->right->color = BLACK;
 
-                    w->color =
-                        RED;
+                    w->color = RED;
 
                     leftRotate(w);
 
-                    w =
-                        x->parent->left;
+                    w = x->parent->left;
                 }
 
-                // CASO 4 ESPEJO
+                // CASO 4
 
-                w->color =
-                    x->parent->color;
+                w->color = x->parent->color;
 
-                x->parent->color =
-                    BLACK;
+                x->parent->color = BLACK;
 
-                w->left->color =
-                    BLACK;
+                w->left->color = BLACK;
 
-                rightRotate(
-                    x->parent
-                );
+                rightRotate(x->parent);
 
                 x = root;
             }
@@ -794,9 +616,7 @@ void RedBlackTree::fixDelete(
     x->color = BLACK;
 }
 
-void RedBlackTree::destroy(
-    RBNode* node
-)
+void RedBlackTree::destroy(RBNode* node)
 {
     if(
         node == NIL
@@ -813,7 +633,6 @@ void RedBlackTree::destroy(
 RedBlackTree::~RedBlackTree()
 {
     destroy(root);
-
     delete NIL;
 }
 
@@ -822,35 +641,24 @@ int RedBlackTree::totalSize() const
     return root->subtreeSize;
 }
 
-bool RedBlackTree::contains(
-    double key
-)
+bool RedBlackTree::contains(double key)
 {
-    return search(key)
-        != nullptr;
+    return search(key) != nullptr;
 }
 
-RBNode* RedBlackTree::maxNode(
-    RBNode* node
-)
+RBNode* RedBlackTree::maxNode(RBNode* node)
 {
-    while(
-        node->right != NIL
-    )
+    while(node->right != NIL)
     {
-        node =
-            node->right;
+        node = node->right;
     }
-
     return node;
 }
 
 double RedBlackTree::max()
 {
     if(root == NIL)
-        throw std::runtime_error(
-            "Arbol vacio"
-        );
+        throw std::runtime_error("Arbol vacio");
 
     return maxNode(root)->key;
 }
@@ -858,9 +666,7 @@ double RedBlackTree::max()
 double RedBlackTree::min()
 {
     if(root == NIL)
-        throw std::runtime_error(
-            "Arbol vacio"
-        );
+        throw std::runtime_error("Arbol vacio");
 
     return minimum(root)->key;
 }
@@ -869,10 +675,7 @@ std::vector<RBNode*> RedBlackTree::getNodes()
 {
     std::vector<RBNode*> result;
 
-    inorderNodes(
-        root,
-        result
-    );
+    inorderNodes(root,result);
 
     return result;
 }
@@ -880,7 +683,6 @@ std::vector<RBNode*> RedBlackTree::getNodes()
 void RedBlackTree::clear()
 {
     destroy(root);
-
     root = NIL;
 }
 

@@ -21,7 +21,6 @@ private:
 
     sf::Font font;
 
-
     std::unique_ptr<DatabaseVisualizer> dbView;
 
     RBNode* currentNode = nullptr;
@@ -37,6 +36,7 @@ private:
     bool hasQuery = false;
 
     std::string commandBuffer;
+
     bool typingCommand = false;
 
     Database* dbRef = nullptr;
@@ -47,24 +47,17 @@ public:
 
     RBVisualizer();
 
-    void show(
-        RedBlackTree& tree
-    );
+    void show(RedBlackTree& tree);
 
     void setDatabase(const Database& db);
 
-    void setQueryResult(
-    const QueryResult& result
-);
-
+    void setQueryResult(const QueryResult& result);
 
 private:
 
     void processEvents();
 
-    void updateLayout(
-        RedBlackTree& tree
-    );
+    void updateLayout(RedBlackTree& tree);
 
     void draw();
 
@@ -72,9 +65,7 @@ private:
 
     void drawNodes();
 
-    void drawNode(
-        const VisualNode&
-    );
+    void drawNode(const VisualNode&);
 
     void drawQueryInfo();
 

@@ -18,14 +18,8 @@ private:
 
         int value;
         Node* next;
+        Node(int value,Node* next = nullptr): value(value),next(next){}
 
-        Node(
-            int value,
-            Node* next = nullptr
-        )
-            : value(value),
-              next(next)
-        {}
     };
 
     Node** table;
@@ -36,14 +30,11 @@ private:
 
 private:
 
-    size_t hash(int value) const {
-        return std::hash<int>{}(value) % capacity;
-    }
+    size_t hash(int value) const {return std::hash<int>{}(value) % capacity;}
 
     void initialize(size_t cap) {
 
         capacity = cap;
-
         table = new Node*[capacity];
 
         for(size_t i = 0; i < capacity; i++) {
@@ -82,8 +73,7 @@ private:
 
 public:
 
-    HashSetInt(size_t cap = 11)
-        : numElements(0)
+    HashSetInt(size_t cap = 11) : numElements(0)
     {
         initialize(cap);
     }
@@ -114,7 +104,6 @@ public:
         Node* current = table[idx];
 
         while(current) {
-
             if(current->value == value)
                 return true;
 
@@ -129,20 +118,14 @@ public:
         if(contains(value))
             return;
 
-        if(
-            (double)(numElements + 1)
-            / capacity > 0.75
-        ) {
+        if((double)(numElements + 1)/ capacity > 0.75)
+        {
             rehash();
         }
 
         size_t idx = hash(value);
 
-        table[idx] =
-            new Node(
-                value,
-                table[idx]
-            );
+        table[idx] =new Node( value,table[idx] );
 
         numElements++;
     }
@@ -170,11 +153,9 @@ public:
 
                 return true;
             }
-
             prev = current;
             current = current->next;
         }
-
         return false;
     }
 
@@ -188,6 +169,8 @@ public:
 
     std::vector<int> toVector() const;
 };
+
+// FUNCION QUE FALTABA PONER
 
 inline std::vector<int> HashSetInt::toVector() const
 {
@@ -204,7 +187,6 @@ inline std::vector<int> HashSetInt::toVector() const
             current = current->next;
         }
     }
-
     return result;
 }
 

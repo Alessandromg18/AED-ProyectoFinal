@@ -11,4 +11,5 @@ enum Color {
     RED,
     BLACK
 };
+
 #endif //COLOR_H
