@@ -40,19 +40,19 @@ int main()
         switch(datasetOption)
         {
             case 1:
-                datasetPath = "../data/dataset_1000.csv";
+                datasetPath = "data/dataset_1000.csv";
                 break;
 
             case 2:
-                datasetPath = "../data/dataset_10000.csv";
+                datasetPath = "data/dataset_10000.csv";
                 break;
 
             case 3:
-                datasetPath = "../data/dataset_100000.csv";
+                datasetPath = "data/dataset_100000.csv";
                 break;
 
             case 4:
-                datasetPath = "../data/dataset_1000000.csv";
+                datasetPath = "data/dataset_1000000.csv";
                 break;
 
             default:

@@ -12,7 +12,7 @@ RBVisualizer::RBVisualizer() : window(sf::VideoMode({1200, 700}), "Red Black Tre
 {
     sf::Image icon;
 
-    if(icon.loadFromFile("../assets/utec_logo.png"))
+    if(icon.loadFromFile("assets/utec_logo.png"))
     {
         window.setIcon(icon.getSize(),icon.getPixelsPtr());
     }
@@ -21,7 +21,7 @@ RBVisualizer::RBVisualizer() : window(sf::VideoMode({1200, 700}), "Red Black Tre
         std::cout << "Error cargando icono\n";
     }
 
-    if(!font.openFromFile("assets/fonts/ARIAL.ttf"))
+    if(!font.openFromFile("assets/fonts/ARIAL.TTF"))
     {
         std::cout << "Error cargando fuente\n";
     }
