@@ -25,29 +25,14 @@ class TreeLayout
 {
 public:
 
-    static void computeLayout(
-    RBNode* node,
-    RBNode* NIL,
-    std::vector<VisualNode>& layout,
-    int depth, // Lo dejamos aquí para no romper tu llamada
-    int maxDepth);
+    static void computeLayout(RBNode* node,RBNode* NIL,std::vector<VisualNode>& layout,int depth,int maxDepth);
 
-    static void calculatePositions(
-    RBNode* node,
-    RBNode* NIL,
-    int depth,
-    int maxDepth,
-    int& xCounter);
+    static void calculatePositions(RBNode* node,RBNode* NIL,int depth,int maxDepth,int& xCounter);
 
-    static void fillLayoutVector(
-    RBNode* node,
-    RBNode* NIL,
-    std::vector<VisualNode>& layout,
-    int maxDepth,
-    int depth);
+    static void fillLayoutVector(RBNode* node,RBNode* NIL,std::vector<VisualNode>& layout,int maxDepth,int depth);
 
 };
 
 
 
-#endif //TREELAYOUT_H
+#endif

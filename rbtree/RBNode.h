@@ -27,18 +27,7 @@ struct RBNode {
     float x;
     float y;
 
-    RBNode(
-        double key
-    )
-        : key(key),
-          color(RED),
-          left(nullptr),
-          right(nullptr),
-          parent(nullptr),
-          subtreeSize(0),
-          x(0.f),
-          y(0.f)
-    {}
+    RBNode(double key): key(key),color(RED),left(nullptr),right(nullptr),parent(nullptr),subtreeSize(0),x(0.f),y(0.f){}
 };
 
 #endif //RBNODE_H

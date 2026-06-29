@@ -4,10 +4,8 @@
 
 #include "DatabaseVisualizer.h"
 #include <sstream>
-static std::string truncateText(
-    const std::string& text,
-    size_t maxLength
-)
+
+static std::string truncateText(const std::string& text,size_t maxLength)
 {
     if(text.size() <= maxLength)
         return text;
@@ -15,27 +13,16 @@ static std::string truncateText(
     return text.substr(0, maxLength - 3) + "...";
 }
 
-DatabaseVisualizer::DatabaseVisualizer(
-    sf::Font& font
-)
-    : font(font),
-      startX(20.f),
-      startY(50.f),
-      rowHeight(30.f)
-{
-}
+DatabaseVisualizer::DatabaseVisualizer(sf::Font& font): font(font),startX(20.f),startY(50.f),rowHeight(30.f){}
 
 void DatabaseVisualizer::setRecords(const std::vector<Record>& newRecords)
 {
     records = newRecords;
-
     totalPages = (records.size() + pageSize - 1) / pageSize;
     currentPage = 0;
 }
 
-void DatabaseVisualizer::highlight(
-    const std::vector<int>& ids
-)
+void DatabaseVisualizer::highlight(const std::vector<int>& ids)
 {
     highlightedIds.clear();
 
@@ -47,6 +34,7 @@ void DatabaseVisualizer::clearHighlights()
 {
     highlightedIds.clear();
 }
+
 void DatabaseVisualizer::draw(sf::RenderWindow& window)
 {
     const float colId    = 80.f;
@@ -55,7 +43,6 @@ void DatabaseVisualizer::draw(sf::RenderWindow& window)
     const float colScore = 100.f;
     const float colCat   = 140.f;
 
-    // HEADER
     sf::Text header(font);
     header.setCharacterSize(16);
     header.setFillColor(sf::Color::Black);
@@ -68,7 +55,7 @@ void DatabaseVisualizer::draw(sf::RenderWindow& window)
     window.draw(header);
     x += colId;
 
-    header.setString("NAME");
+    header.setString("NOMBRE");
     header.setPosition({x, y});
     window.draw(header);
     x += colName;
@@ -83,13 +70,11 @@ void DatabaseVisualizer::draw(sf::RenderWindow& window)
     window.draw(header);
     x += colScore;
 
-    header.setString("CATEGORY");
+    header.setString("CATEGORIA");
     header.setPosition({x, y});
     window.draw(header);
 
-    // =========================
-    // PAGINATION LOGIC
-    // =========================
+    // Paginacion :
 
     int start = currentPage * pageSize;
     int end = std::min(start + pageSize, (int)records.size());
@@ -109,6 +94,7 @@ void DatabaseVisualizer::draw(sf::RenderWindow& window)
 
         if(highlightedIds.count(record.id))
             rowBg.setFillColor(sf::Color(200, 230, 255));
+
         else
             rowBg.setFillColor(sf::Color(245, 245, 245));
 
@@ -121,9 +107,7 @@ void DatabaseVisualizer::draw(sf::RenderWindow& window)
         window.draw(cell);
         cx += colId;
 
-        cell.setString(
-    truncateText(record.name, 28)
-);
+        cell.setString(truncateText(record.name, 28));
         cell.setPosition({cx, rowY});
         window.draw(cell);
         cx += colName;
@@ -133,11 +117,7 @@ void DatabaseVisualizer::draw(sf::RenderWindow& window)
         window.draw(cell);
         cx += colAge;
 
-        cell.setString(
-    std::to_string(
-        static_cast<int>(record.score)
-    )
-);
+        cell.setString(std::to_string(static_cast<int>(record.score)));
         cell.setPosition({cx, rowY});
         window.draw(cell);
         cx += colScore;
@@ -149,22 +129,18 @@ void DatabaseVisualizer::draw(sf::RenderWindow& window)
         rowY += rowHeight;
     }
 
-    // FOOTER (OPCIONAL PERO PRO)
     sf::Text footer(font);
     footer.setCharacterSize(14);
     footer.setFillColor(sf::Color::Black);
 
     footer.setString(
-        "Page " + std::to_string(currentPage + 1) +
+        "Pagina " + std::to_string(currentPage + 1) +
         " / " + std::to_string(totalPages)
     );
 
     auto viewSize = window.getView().getSize();
 
-    footer.setPosition({
-        startX,
-        viewSize.y - 30.f
-    });
+    footer.setPosition({startX,viewSize.y - 30.f});
     window.draw(footer);
 }
 

@@ -16,10 +16,7 @@ class CSVLoader {
 
 public:
 
-    static std::vector<Record> load(
-        const std::string& filename
-    );
-
+    static std::vector<Record> load(const std::string& filename);
 };
 
 #endif //CSVLOADER_H

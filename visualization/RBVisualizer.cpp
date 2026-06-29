@@ -7,15 +7,23 @@
 #include <unordered_set>
 #include <iostream>
 
-
-
-RBVisualizer::RBVisualizer()
-    : window(sf::VideoMode({1200, 700}), "Red Black Tree Visualizer"),
+RBVisualizer::RBVisualizer() : window(sf::VideoMode({1200, 700}), "Red Black Tree Frontend"),
       camera(window.getDefaultView())
 {
-    if(!font.openFromFile("assets/fonts/ARIAL.TTF"))
+    sf::Image icon;
+
+    if(icon.loadFromFile("../assets/utec_logo.png"))
     {
-        std::cout << "Error loading font\n";
+        window.setIcon(icon.getSize(),icon.getPixelsPtr());
+    }
+    else
+    {
+        std::cout << "Error cargando icono\n";
+    }
+
+    if(!font.openFromFile("assets/fonts/ARIAL.ttf"))
+    {
+        std::cout << "Error cargando fuente\n";
     }
 
     dbView = std::make_unique<DatabaseVisualizer>(font);
@@ -31,21 +39,14 @@ void RBVisualizer::show(RedBlackTree& tree)
     while(window.isOpen())
     {
         processEvents();
-
         window.clear(sf::Color::White);
-
-        // --- RENDERIZADO DEL HUD (CÁMARA DEFAULT) ---
         window.setView(window.getDefaultView());
-
-        // La Base de Datos ahora empieza pegada a la izquierda de la pantalla
         dbView->draw(window);
 
-        // Bloque derecho consolidado
         drawCommandBox();
         drawQueryInfo();
-        drawHelpOverlay(); // <-- NUEVO: Se dibuja sobre el HUD fijo
+        drawHelpOverlay();
 
-        // --- RENDERIZADO DEL ÁRBOL (CÁMARA DEL VIEWPORT) ---
         window.setView(camera);
         drawConnections();
         drawNodes();
@@ -73,7 +74,7 @@ void RBVisualizer::processEvents()
         {
             if(key->code == sf::Keyboard::Key::F1)
             {
-                showHelp = !showHelp; // Alterna entre true y false
+                showHelp = !showHelp;
             }
 
             if(key->code == sf::Keyboard::Key::B)
@@ -87,15 +88,11 @@ void RBVisualizer::processEvents()
                 return;
             }
 
-            // =========================
-            // TREE NAVIGATION (WASD)
-            // =========================
+            // Moverse en el arbol
 
             if(key->code == sf::Keyboard::Key::A)
             {
-                if(currentNode &&
-                   currentNode->left &&
-                   currentNode->left != treeRef->getNIL())
+                if(currentNode && currentNode->left && currentNode->left != treeRef->getNIL())
                 {
                     currentNode = currentNode->left;
                 }
@@ -103,9 +100,7 @@ void RBVisualizer::processEvents()
 
             else if(key->code == sf::Keyboard::Key::D)
             {
-                if(currentNode &&
-                   currentNode->right &&
-                   currentNode->right != treeRef->getNIL())
+                if(currentNode && currentNode->right && currentNode->right != treeRef->getNIL())
                 {
                     currentNode = currentNode->right;
                 }
@@ -113,9 +108,7 @@ void RBVisualizer::processEvents()
 
             else if(key->code == sf::Keyboard::Key::W)
             {
-                if(currentNode &&
-                   currentNode->parent &&
-                   currentNode != treeRef->getRoot())
+                if(currentNode && currentNode->parent && currentNode != treeRef->getRoot())
                 {
                     currentNode = currentNode->parent;
                 }
@@ -126,11 +119,7 @@ void RBVisualizer::processEvents()
                 currentNode = treeRef->getRoot();
             }
 
-
-
-            // =========================
-            // DATABASE PAGINATION (O/P)
-            // =========================
+            // Moverse de pagina en el dataset
 
             else if(key->code == sf::Keyboard::Key::O)
             {
@@ -170,6 +159,8 @@ void RBVisualizer::processEvents()
 
     float speed = 2.f;
 
+    // Mover la camara :
+
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
         camera.move({-speed, 0});
 
@@ -187,25 +178,23 @@ void RBVisualizer::processEvents()
 void RBVisualizer::updateLayout(RedBlackTree& tree)
 {
     layout.clear();
+
     if(!currentNode) currentNode = tree.getRoot();
 
     TreeLayout::computeLayout(currentNode, tree.getNIL(), layout, 0, 5);
 
     std::unordered_set<RBNode*> visited(tree.getVisitedNodes().begin(), tree.getVisitedNodes().end());
+
     for(auto& v : layout) {
         v.visited = visited.count(v.node) > 0;
     }
 
     if (currentNode && currentNode != tree.getNIL()) {
         static RBNode* lastNode = nullptr;
+
         if (currentNode != lastNode) {
             sf::Vector2f viewSize = camera.getSize();
-
-            // --- MARGEN DE SEGURIDAD PARA LA RAÍZ ---
-            // Restamos 45.f al cálculo para empujar el plano visual de la cámara hacia abajo,
-            // permitiendo que el nodo de arriba muestre su mitad superior y sus textos sin cortarse.
             camera.setCenter({currentNode->x, currentNode->y + (viewSize.y / 2.f) - 45.f});
-
             lastNode = currentNode;
         }
 
@@ -219,19 +208,12 @@ void RBVisualizer::drawConnections()
     {
         if(v.node->left)
         {
-            auto it = std::find_if(
-                layout.begin(),
-                layout.end(),
-                [&](const VisualNode& n){ return n.node == v.node->left; }
-            );
+            auto it = std::find_if(layout.begin(),layout.end(),
+                [&](const VisualNode& n){ return n.node == v.node->left; });
 
             if(it != layout.end())
             {
-                sf::Vertex line[] =
-                {
-                    sf::Vertex(v.position, sf::Color::Black),
-                    sf::Vertex(it->position, sf::Color::Black)
-                };
+                sf::Vertex line[] = {sf::Vertex(v.position, sf::Color::Black), sf::Vertex(it->position, sf::Color::Black)};
 
                 window.draw(line, 2, sf::PrimitiveType::Lines);
             }
@@ -239,19 +221,12 @@ void RBVisualizer::drawConnections()
 
         if(v.node->right)
         {
-            auto it = std::find_if(
-                layout.begin(),
-                layout.end(),
-                [&](const VisualNode& n){ return n.node == v.node->right; }
-            );
+            auto it = std::find_if(layout.begin(), layout.end(),
+                [&](const VisualNode& n){ return n.node == v.node->right; } );
 
             if(it != layout.end())
             {
-                sf::Vertex line[] =
-                {
-                    sf::Vertex(v.position, sf::Color::Black),
-                    sf::Vertex(it->position, sf::Color::Black)
-                };
+                sf::Vertex line[] = {sf::Vertex(v.position, sf::Color::Black), sf::Vertex(it->position, sf::Color::Black)};
 
                 window.draw(line, 2, sf::PrimitiveType::Lines);
             }
@@ -268,13 +243,8 @@ void RBVisualizer::drawNodes()
 void RBVisualizer::drawNode(const VisualNode& v)
 {
     sf::CircleShape circle(24.f);
-    circle.setPosition(
-        v.position - sf::Vector2f(17.f, 20.f)
-    );
+    circle.setPosition(v.position - sf::Vector2f(17.f, 20.f));
 
-    // =========================
-    // OUTLINE
-    // =========================
     sf::Color outlineColor;
     float thickness = 1.f;
 
@@ -283,11 +253,13 @@ void RBVisualizer::drawNode(const VisualNode& v)
         outlineColor = sf::Color::Yellow;
         thickness = 4.f;
     }
+
     else if(v.visited)
     {
         outlineColor = sf::Color::Blue;
         thickness = 3.f;
     }
+
     else
     {
         outlineColor = sf::Color::White;
@@ -297,72 +269,52 @@ void RBVisualizer::drawNode(const VisualNode& v)
     circle.setOutlineThickness(thickness);
     circle.setOutlineColor(outlineColor);
 
-    // =========================
-    // NODE COLOR
-    // =========================
-    if(v.node->color == RED)
-        circle.setFillColor(
-            sf::Color(200, 50, 50)
-        );
-    else
-        circle.setFillColor(
-            sf::Color::Black
-        );
+    // COLOREAMOS LOS NODOS :
 
+    if(v.node->color == RED)
+        circle.setFillColor(sf::Color(200, 50, 50));
+    else
+        circle.setFillColor(sf::Color::Black);
     window.draw(circle);
 
-    // =========================
-    // KEY (CENTERED)
-    // =========================
+    // Colocamos el score en el centro del nodo :
+
     sf::Text keyText(font);
 
     std::ostringstream oss;
 
-    // si no tiene decimal significativo
     if(v.node->key == (int)v.node->key)
     {
         oss << (int)v.node->key;
     }
+
     else
     {
-        oss << std::fixed
-            << std::setprecision(1)
-            << v.node->key;
+        oss << std::fixed << std::setprecision(1) << v.node->key;
     }
 
     keyText.setString(oss.str());
-
     keyText.setCharacterSize(9);
     keyText.setFillColor(sf::Color::White);
 
     auto bounds = keyText.getLocalBounds();
 
-    keyText.setOrigin({
-        bounds.position.x + bounds.size.x / 3.f,
-        bounds.position.y + bounds.size.y / 3.f
-    });
+    keyText.setOrigin({bounds.position.x + bounds.size.x / 3.f, bounds.position.y + bounds.size.y / 3.f });
 
     keyText.setPosition(v.position);
 
     window.draw(keyText);
 
+    // Colocamos su SUBTREE SIZE en el superior derecho
 
-    // =========================
-    // SUBTREE SIZE (TOP RIGHT)
-    // =========================
     sf::Text sizeText(font);
 
-    sizeText.setString(
-        "s:" +
-        std::to_string(v.node->subtreeSize)
-    );
+    sizeText.setString("s:" +std::to_string(v.node->subtreeSize));
 
     sizeText.setCharacterSize(9);
     sizeText.setFillColor(sf::Color::Black);
 
-    sizeText.setPosition(
-        v.position + sf::Vector2f(26.f, -24.f)
-    );
+    sizeText.setPosition(v.position + sf::Vector2f(26.f, -24.f));
 
     window.draw(sizeText);
 }
@@ -373,22 +325,20 @@ void RBVisualizer::setDatabase(const Database& db)
     dbView->setRecords(db.getAllRecords());
 }
 
-void RBVisualizer::setQueryResult(
-    const QueryResult& result
-)
+void RBVisualizer::setQueryResult(const QueryResult& result)
 {
     currentQuery = result;
     hasQuery = true;
 
     if(!result.visitedNodes.empty())
     {
-        currentNode =
-            result.visitedNodes.front();
+        currentNode = result.visitedNodes.front();
     }
 
     dbView->setRecords(result.records);
 
-    // Opcional: resaltarlos igual
+    // Resaltamos los registros
+
     std::vector<int> ids;
 
     for(const auto& r : result.records)
@@ -404,20 +354,19 @@ void RBVisualizer::drawQueryInfo()
     if(!hasQuery)
         return;
 
-    // Sincronizamos la posición X con la caja de comandos de arriba
     sf::Vector2u windowSize = window.getSize();
     float posX = windowSize.x - 400.f - 20.f;
-    float posY = 55.f; // Justo debajo de la caja de comandos
+    float posY = 55.f;
 
     sf::Text text(font);
-    text.setCharacterSize(14); // Un toque más compacto para el bloque
+    text.setCharacterSize(14);
     text.setFillColor(sf::Color(50, 50, 50));
 
     text.setString(
-        "RBT Time: " + std::to_string(currentQuery.rbtTimeUs) + " us\n" +
-        "Linear Time: " + std::to_string(currentQuery.linearTimeUs) + " us\n" +
-        "Visited Nodes: " + std::to_string(currentQuery.visitedRBT) + "\n" +
-        "Linear Checked: " + std::to_string(currentQuery.visitedLinear)
+        "Tiempo RBT: " + std::to_string(currentQuery.rbtTimeUs) + " us\n" +
+        "Tiempo Lineal: " + std::to_string(currentQuery.linearTimeUs) + " us\n" +
+        "Nodes Visitados en RBT: " + std::to_string(currentQuery.visitedRBT) + "\n" +
+        "Nodos Visitados en Lineal: " + std::to_string(currentQuery.visitedLinear)
     );
 
     text.setPosition({posX + 5.f, posY});
@@ -430,27 +379,25 @@ void RBVisualizer::processCommand(const std::string& cmd)
 
     if(cmd == "reset")
     {
-        // quitar estado de consulta
         hasQuery = false;
 
-        // limpiar nodos visitados del árbol
+        // Limpiamos los nodos visitados del árbol :
+
         treeRef->resetVisited();
 
-        // restaurar tabla completa
+        // Restauramos la tabla completa :
+
         dbView->clearHighlights();
-        dbView->setRecords(
-            dbRef->getAllRecords()
-        );
+        dbView->setRecords(dbRef->getAllRecords());
 
-        // volver al root
-        currentNode =
-            treeRef->getRoot();
+        // Volvemos a la raiz :
 
-        // resetear cámara
-        camera =
-            window.getDefaultView();
+        currentNode = treeRef->getRoot();
 
-        // recalcular layout
+        // Reseteamos cámara :
+
+        camera = window.getDefaultView();
+
         updateLayout(*treeRef);
 
         return;
@@ -459,37 +406,34 @@ void RBVisualizer::processCommand(const std::string& cmd)
     std::istringstream ss(cmd);
     std::string op;
     ss >> op;
-    if(op == "topk")
+
+    if(op == "top")
     {
         int k;
 
         if(!(ss >> k) || k <= 0)
         {
-            commandBuffer =
-                "ERROR: use -> topk <positive_int>";
+            commandBuffer = "ERROR: Debes usar -> top <entero positivo>";
             return;
         }
 
-        auto result =
-            QueryBenchmark::topK(*dbRef, k);
+        auto result = QueryBenchmark::topK(*dbRef, k);
 
         setQueryResult(result);
         hasQuery = true;
     }
 
-    else if(op == "bottomk")
+    else if(op == "bottom")
     {
         int k;
 
         if(!(ss >> k) || k <= 0)
         {
-            commandBuffer =
-                "ERROR: use -> bottomk <positive_int>";
+            commandBuffer = "ERROR: Debes usar -> bottom <entero positivo>";
             return;
         }
 
-        auto result =
-            QueryBenchmark::bottomK(*dbRef, k);
+        auto result = QueryBenchmark::bottomK(*dbRef, k);
 
         setQueryResult(result);
         hasQuery = true;
@@ -501,84 +445,73 @@ void RBVisualizer::processCommand(const std::string& cmd)
 
         if(!(ss >> id))
         {
-            commandBuffer =
-                "ERROR: use -> id <int>";
+            commandBuffer = "ERROR: Debes usar -> id <entero>";
             return;
         }
 
-        auto result =
-            QueryBenchmark::searchById(*dbRef, id);
+        auto result = QueryBenchmark::searchById(*dbRef, id);
 
         if(result.records.empty())
         {
-            commandBuffer =
-                "ID not found";
+            commandBuffer = "ID no identificado";
             return;
         }
 
         setQueryResult(result);
         hasQuery = true;
 
-        // 🔥 mover al nodo del score
-        double score =
-            result.records[0].score;
+        double score = result.records[0].score;
 
-        currentNode =
-            treeRef->search(score);
+        currentNode = treeRef->search(score);
 
         updateLayout(*treeRef);
     }
 
-    else if(op == "range")
+    else if(op == "rango")
     {
         double a, b;
 
         if(!(ss >> a >> b))
         {
-            commandBuffer =
-                "ERROR: use -> range <min> <max>";
+            commandBuffer = "ERROR: Debes usar -> rango <min> <max>";
             return;
         }
 
         if(a > b)
             std::swap(a, b);
 
-        auto result =
-            QueryBenchmark::rangeSearch(*dbRef, a, b);
+        auto result = QueryBenchmark::rangeSearch(*dbRef, a, b);
 
         setQueryResult(result);
         hasQuery = true;
     }
 
-    else if(op == "percentile")
+    else if(op == "percentil")
     {
         double p;
 
         if(!(ss >> p))
         {
-            commandBuffer =
-                "ERROR: use -> percentile <0-100>";
+            commandBuffer = "ERROR: Debes usar -> percentil <0-100>";
             return;
         }
 
         if(p < 0 || p > 100)
         {
             commandBuffer =
-                "ERROR: percentile must be between 0 and 100";
+                "ERROR: Percentil no esta entre 0 o 100";
             return;
         }
 
-        auto result =
-            QueryBenchmark::percentile(*dbRef, p);
+        auto result = QueryBenchmark::percentile(*dbRef, p);
 
         setQueryResult(result);
         hasQuery = true;
     }
 
-    else if(op == "median")
+    else if(op == "mediana")
     {
-        auto result =
-            QueryBenchmark::median(*dbRef);
+        auto result = QueryBenchmark::median(*dbRef);
 
         setQueryResult(result);
         hasQuery = true;
@@ -590,29 +523,22 @@ void RBVisualizer::processCommand(const std::string& cmd)
 
         if(!(ss >> score))
         {
-            commandBuffer =
-                "ERROR: use -> score <number>";
+            commandBuffer = "ERROR: Debes usar -> score <numero>";
             return;
         }
 
-        auto result =
-            QueryBenchmark::equalitySearch(
-                *dbRef,
-                score
-            );
+        auto result = QueryBenchmark::equalitySearch(*dbRef,score);
 
         if(result.records.empty())
         {
-            commandBuffer =
-                "No records with that score";
+            commandBuffer = "No hay registros con ese score";
             return;
         }
 
         setQueryResult(result);
         hasQuery = true;
 
-        currentNode =
-            treeRef->search(score);
+        currentNode = treeRef->search(score);
 
         updateLayout(*treeRef);
     }
@@ -627,40 +553,26 @@ void RBVisualizer::processCommand(const std::string& cmd)
 
         if(!(ss >> id >> name >> age >> score >> category))
         {
-            commandBuffer =
-                "ERROR: invalid insert format";
-
+            commandBuffer = "ERROR: Formato de insert invalido";
             return;
         }
 
-        Record r{
-            id,
-            name,
-            age,
-            score,
-            category
-        };
+        Record r{id,name,age,score,category};
 
-        bool inserted =
-            dbRef->insertRecord(r);
+        bool inserted = dbRef->insertRecord(r);
 
         if(!inserted)
         {
-            commandBuffer =
-                "ERROR: ID already exists";
+            commandBuffer = "ERROR: Ese ID ya existe";
 
             return;
         }
 
-        commandBuffer =
-            "Inserted successfully";
+        commandBuffer = "Se inserto correctamente";
 
-        dbView->setRecords(
-            dbRef->getAllRecords()
-        );
+        dbView->setRecords(dbRef->getAllRecords());
 
-        currentNode =
-            treeRef->search(score);
+        currentNode = treeRef->search(score);
 
         updateLayout(*treeRef);
 
@@ -672,44 +584,30 @@ void RBVisualizer::processCommand(const std::string& cmd)
         int id;
         ss >> id;
 
-        Record* r =
-            dbRef->findById(id);
+        Record* r = dbRef->findById(id);
 
-        // ERROR: no existe
         if(!r)
         {
-            commandBuffer =
-                "ERROR: ID not found";
-
+            commandBuffer = "ERROR: ID no encontrado";
             return;
         }
 
-        double score =
-            r->score;
+        double score = r->score;
 
-        bool deleted =
-            dbRef->deleteRecord(id);
+        bool deleted = dbRef->deleteRecord(id);
 
-        // ERROR interno
         if(!deleted)
         {
-            commandBuffer =
-                "ERROR deleting record";
+            commandBuffer = "ERROR elimando ese registro";
 
             return;
         }
 
-        // SUCCESS
-        commandBuffer =
-            "Deleted successfully";
+        commandBuffer = "Se elimino correctamente";
 
-        dbView->setRecords(
-            dbRef->getAllRecords()
-        );
+        dbView->setRecords(dbRef->getAllRecords());
 
-        // mover foco a root si el score eliminado ya no existe
-        RBNode* found =
-            treeRef->search(score);
+        RBNode* found = treeRef->search(score);
 
         if(found != treeRef->getNIL())
             currentNode = found;
@@ -721,19 +619,83 @@ void RBVisualizer::processCommand(const std::string& cmd)
         typingCommand = false;
     }
 
+    else if(op == "count")
+    {
+        double a, b;
+
+        if(!(ss >> a >> b))
+        {
+            commandBuffer = "ERROR: Debes usar -> count <min> <max>";
+            return;
+        }
+
+        auto result =QueryBenchmark::countRange(*dbRef,a,b);
+
+        setQueryResult(result);
+        hasQuery = true;
+    }
+
+    else if(op == "rank")
+    {
+        double key;
+
+        if(!(ss >> key))
+        {
+            commandBuffer = "ERROR: Debes usar -> rank <score>";
+            return;
+        }
+
+        auto result = QueryBenchmark::rank(*dbRef,key);
+
+        setQueryResult(result);
+        hasQuery = true;
+    }
+
+    else if(op == "update")
+    {
+        int id;
+        double newScore;
+
+        if(!(ss >> id >> newScore))
+        {
+            commandBuffer = "ERROR: Debes usar -> update <id> <score>";
+            return;
+        }
+
+        Record* r = dbRef->findById(id);
+
+        if(!r)
+        {
+            commandBuffer = "ERROR: ID no encontrado";
+            return;
+        }
+
+        bool updated = dbRef->updateScore(id,newScore);
+
+        if(!updated)
+        {
+            commandBuffer ="ERROR al actualizar el registro";
+            return;
+        }
+
+        commandBuffer = "Actualizacion completada";
+
+        dbView->setRecords(dbRef->getAllRecords());
+
+        currentNode = treeRef->search(newScore);
+
+        updateLayout(*treeRef);
+    }
 
 }
 
 void RBVisualizer::drawCommandBox()
 {
-    // Obtenemos el tamaño actual de la ventana para posicionamiento relativo
     sf::Vector2u windowSize = window.getSize();
 
-    // Dimensiones de la caja
     float boxWidth = 400.f;
     float boxHeight = 30.f;
 
-    // Posición: alineado a la derecha (Ancho ventana - Ancho caja - Margen de 20px)
     float posX = windowSize.x - boxWidth - 40.f;
     float posY = 10.f;
 
@@ -741,9 +703,11 @@ void RBVisualizer::drawCommandBox()
     box.setPosition({posX, posY});
     box.setFillColor(sf::Color(230, 230, 230));
 
-    // Añadimos un pequeño borde para que resalte más al escribir
     box.setOutlineThickness(typingCommand ? 2.f : 0.f);
-    box.setOutlineColor(sf::Color(200, 50, 50)); // Rojo si estás escribiendo
+
+    // Si estamos escribiendo se pone de rojo
+
+    box.setOutlineColor(sf::Color(50, 200, 255));
 
     window.draw(box);
 
@@ -751,7 +715,8 @@ void RBVisualizer::drawCommandBox()
     text.setCharacterSize(14);
     text.setFillColor(sf::Color::Black);
 
-    // Si no está escribiendo, ponemos un texto guía elegante
+    // Si no está escribiendo, ponemos un texto guía
+
     if (commandBuffer.empty() && !typingCommand) {
         text.setString("Presiona 'B' para escribir un comando...");
         text.setFillColor(sf::Color(150, 150, 150));
@@ -763,58 +728,77 @@ void RBVisualizer::drawCommandBox()
     window.draw(text);
 }
 
-// Añade este método a tu clase RBVisualizer
 void RBVisualizer::drawHelpOverlay()
 {
-    if (!showHelp) return;
+    if(!showHelp) return;
 
     sf::Vector2u windowSize = window.getSize();
-    float boxWidth = 400.f;
+
+    float boxWidth = 430.f;
     float posX = windowSize.x - boxWidth - 20.f;
-    float posY = 150.f; // Posicionado abajo de las estadísticas
+    float posY = 150.f;
 
-    // Fondo del panel de ayuda
-    sf::RectangleShape helpBox({boxWidth, 260.f});
-    helpBox.setPosition({posX, posY});
-    helpBox.setFillColor(sf::Color(245, 245, 245));
-    helpBox.setOutlineThickness(1.f);
-    helpBox.setOutlineColor(sf::Color(200, 200, 200));
-    window.draw(helpBox);
+    // CONTENIDO
 
-    sf::Text title(font, "GUIA DE CONTROLES (F1 para cerrar)");
-    title.setCharacterSize(11);
-    title.setStyle(sf::Text::Style::Bold);
-    title.setFillColor(sf::Color::White);
-
-    sf::RectangleShape titleBar({boxWidth, 20.f});
-    titleBar.setPosition({posX, posY});
-    titleBar.setFillColor(sf::Color(80, 80, 80));
-    window.draw(titleBar);
-    title.setPosition({posX + 5.f, posY + 2.f});
-    window.draw(title);
-
-    // Contenido de los comandos
     sf::Text body(font);
     body.setCharacterSize(11);
     body.setFillColor(sf::Color::Black);
+
     body.setString(
         " CONTROLES DEL VISUALIZADOR:\n"
         "  B : Activar barra / Flechas : Mover camara\n"
         "  W, A, D : Moverse en Arbol (Padre, Izq, Der)\n"
         "  R : Ir a Raiz / MouseWheel : Zoom\n"
         "  O, P : Pagina Anterior / Siguiente DB\n\n"
-        " COMANDOS DISPONIBLES (Escribir tras pulsar B):\n"
-        "  topk <n>         : Muestra los 'n' mayores scores\n"
-        "  bottomk <n>      : Muestra los 'n' menores scores\n"
-        "  id <id>          : Busca por ID y enfoca en el Arbol\n"
-        "  score <valor>    : Busca score exacto y lo enfoca\n"
-        "  range <min> <max>: Registros en rango de scores\n"
-        "  percentile <p>   : Registros en percentil (0-100)\n"
-        "  median           : Encuentra la mediana de los datos\n"
+
+        " COMANDOS DISPONIBLES:\n"
+        "  top <n>            : Top K scores\n"
+        "  bottom <n>         : Bottom K scores\n"
+        "  id <id>            : Buscar por ID\n"
+        "  score <valor>      : Buscar score exacto\n"
+        "  rango <min> <max>  : Buscar por rango\n"
+        "  rank <score>       : Cantidad menores al score\n"
+        "  percentil <p>     : Buscar percentil\n"
+        "  mediana             : Obtener mediana\n"
+        "  count <min> <max>  : Contar rango\n"
         "  insert <id> <name> <age> <score> <cat>\n"
-        "  delete <id>      : Elimina registro por ID\n"
-        "  reset            : Restaura y limpia la vista"
+        "  delete <id>        : Eliminar registro\n"
+        "  update <id> <score>: Actualizar score\n"
+        "  reset              : Restaurar vista"
     );
-    body.setPosition({posX + 5.f, posY + 25.f});
+
+    body.setPosition({posX + 8.f, posY + 28.f});
+
+    // Altura :
+    auto bodyBounds = body.getLocalBounds();
+
+    float helpHeight = bodyBounds.size.y + 45.f;
+
+    // Fondo :
+    sf::RectangleShape helpBox({boxWidth, helpHeight});
+
+    helpBox.setPosition({posX, posY});
+    helpBox.setFillColor(sf::Color(245, 245, 245));
+    helpBox.setOutlineThickness(1.f);
+    helpBox.setOutlineColor(sf::Color(200, 200, 200));
+
+    window.draw(helpBox);
+
+    sf::RectangleShape titleBar({boxWidth, 20.f});
+
+    titleBar.setPosition({posX, posY});
+    titleBar.setFillColor(sf::Color(80, 80, 80));
+
+    window.draw(titleBar);
+
+    sf::Text title(font,"GUIA DE CONTROLES (F1 para cerrar)");
+
+    title.setCharacterSize(11);
+    title.setStyle(sf::Text::Style::Bold);
+    title.setFillColor(sf::Color::White);
+    title.setPosition({posX + 5.f, posY + 2.f});
+
+    window.draw(title);
+
     window.draw(body);
 }

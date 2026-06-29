@@ -4,12 +4,14 @@
 
 #ifndef DATABASEVISUALIZER_H
 #define DATABASEVISUALIZER_H
+
 #pragma once
 
 #include "../models/Record.h"
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <unordered_set>
+
 class DatabaseVisualizer
 {
 private:
@@ -42,4 +44,4 @@ public:
     void prevPage();
 };
 
-#endif //DATABASEVISUALIZER_H
+#endif

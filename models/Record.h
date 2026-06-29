@@ -10,7 +10,7 @@
 
 struct Record {
 
-    int id;   // Unico
+    int id;   // Debe ser unico para la tabla hash
     std::string name;
     int age;
     double score;
@@ -18,19 +18,8 @@ struct Record {
 
     Record() = default;
 
-    Record(
-        int id,
-        const std::string& name,
-        int age,
-        double score,
-        const std::string& category
-    )
-        : id(id),
-          name(name),
-          age(age),
-          score(score),
-          category(category)
-    {}
+    Record(int id,const std::string& name,int age,double score,const std::string& category): id(id),name(name),
+          age(age),score(score),category(category){}
 
 };
 

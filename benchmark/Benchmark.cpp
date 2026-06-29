@@ -19,50 +19,42 @@ void Benchmark::run(
 )
 {
 
-    cout << "\n==================================================\n";
     cout << "BENCHMARK: TIEMPOS DE CONSTRUCCION Y CONSULTAS\n";
-    cout << "==================================================\n\n";
 
-    // ---------------------------------------------------------
-    // 1. COMPARATIVA DE CONSTRUCCIÓN (RBT/HASH VS LINEAL)
-    // ---------------------------------------------------------
+    // Construcción de la Estructura.
 
-    // A. Construcción de la Estructura Indexada (Carga + Árbol/Hash)
     auto startStruct = high_resolution_clock::now();
     Database db;
-    db.loadCSV(csvFile); // Lee el CSV y construye internamente el Red-Black Tree y Hash
+
+    // Aqui se lee el CSV y construye internamente el Red-Black Tree y Hash.
+
+    db.loadCSV(csvFile);
     auto endStruct = high_resolution_clock::now();
     auto totalStructureTimeMs = duration_cast<milliseconds>(endStruct - startStruct).count();
 
-    // B. "Construcción" Lineal (Solo lectura cruda del CSV a memoria sin indexar)
+    // "Construcción" Lineal
+
     auto startLinearLoad = high_resolution_clock::now();
 
-    // Simulamos la carga lineal: abrimos el archivo y guardamos en un vector plano
+    // Simulamos la carga lineal es decir abrimos el archivo y guardamos en un vector plano.
+
     std::vector<Record> rawLinearRecords;
     std::ifstream file(csvFile);
     std::string line;
+
     if (file.is_open()) {
-        // Omitimos la cabecera si existe
         std::getline(file, line);
+
         while (std::getline(file, line)) {
+
             std::istringstream ss(line);
             std::string idStr, name, ageStr, scoreStr, category;
 
-            // Ajusta este parseo según el orden exacto de las columnas de tu CSV
-            if (std::getline(ss, idStr, ',') &&
-    std::getline(ss, name, ',') &&
-    std::getline(ss, ageStr, ',') &&
-    std::getline(ss, scoreStr, ',') &&
-    std::getline(ss, category, ','))
-            {
-                if(
-                    idStr.empty() ||
-                    ageStr.empty() ||
-                    scoreStr.empty()
-                )
-                {
-                    continue;
-                }
+            if (std::getline(ss, idStr, ',') && std::getline(ss, name, ',') &&
+                std::getline(ss, ageStr, ',') && std::getline(ss, scoreStr, ',') &&
+                std::getline(ss, category, ',')) {
+
+                if(idStr.empty() || ageStr.empty() || scoreStr.empty()) { continue; }
 
                 try
                 {
@@ -74,47 +66,48 @@ void Benchmark::run(
                         category
                     });
                 }
+
                 catch(const std::exception&)
                 {
                     continue;
                 }
             }
         }
+
         file.close();
     }
 
     auto endLinearLoad = high_resolution_clock::now();
     auto totalLinearLoadTimeMs = duration_cast<milliseconds>(endLinearLoad - startLinearLoad).count();
 
-    // Mostramos los resultados de la fase de preparación
+    // Los resultados de la fase de construccion
+
     auto records = db.getAllRecords();
     cout << "Registros Totales Detectados: " << records.size() << "\n\n";
 
-    cout << "--- FASE DE PREPARACION / CONSTRUCCION ---\n";
+    cout << "FASE DE CONSTRUCCION\n";
     cout << "Tiempo de Carga Lineal (Solo Vector en bruto):  " << totalLinearLoadTimeMs << " ms\n";
-    cout << "Tiempo de Construccion Estructura (Arbol/Hash): " << totalStructureTimeMs << " ms\n";
-    cout << "Nota: El Arbol tarda mas inicialmente porque clasifica y ordena los datos.\n\n";
+    cout << "Tiempo de Construccion Estructura (Arbol): " << totalStructureTimeMs << " ms\n";
 
-    // ---------------------------------------------------------
-    // 2. BUSQUEDA POR ID: EJECUTAR LA TOTALIDAD DE LOS DATOS
-    // ---------------------------------------------------------
-    // Eliminamos el min(1000, ...) para procesar absolutamente TODOS los registros
+
     int ITERATIONS = (int)records.size();
 
     cout << "Iniciando pruebas de ID para " << ITERATIONS << " iteraciones completas...\n";
 
-    // A. Búsqueda optimizada por ID (Hash / Estructura primaria)
+    // Búsqueda optimizada por ID (Hash)
+
     auto start = high_resolution_clock::now();
+
     for(int i = 0; i < ITERATIONS; i++)
     {
         db.findById(records[i].id);
     }
     auto end = high_resolution_clock::now();
 
-    cout << "Busqueda por ID (Indexada): "
-         << duration_cast<microseconds>(end - start).count() << " us\n";
+    cout << "Busqueda por ID: " << duration_cast<microseconds>(end - start).count() << " us\n";
 
-    // B. Búsqueda Lineal Normal por ID (Para comparar eficiencias)
+    // Búsqueda Lineal Normal por ID
+
     long long linearVisited = 0;
     start = high_resolution_clock::now();
 
@@ -128,16 +121,15 @@ void Benchmark::run(
                 break;
         }
     }
+
     end = high_resolution_clock::now();
 
-    cout << "Busqueda por ID (Lineal): "
-         << duration_cast<milliseconds>(end - start).count() << " ms\n";
+    cout << "Busqueda por ID (Lineal): " << duration_cast<microseconds>(end - start).count() << " us\n";
     cout << "Registros revisados en Lineal: " << linearVisited << "\n\n";
 
 
-    // ---------------------------------------------------------
-    // 3. CONSULTA POR SCORE (EQUALITY QUERY: RBT VS LINEAL)
-    // ---------------------------------------------------------
+    // Consulta por score para RBT
+
     double score = records[records.size() / 2].score;
 
     db.getScoreIndex().resetVisited();
@@ -146,12 +138,11 @@ void Benchmark::run(
     db.getScoreIndex().search(score);
     end = high_resolution_clock::now();
 
-    cout << "Equality Query (Red-Black Tree): "
-         << duration_cast<microseconds>(end - start).count() << " us\n";
-    cout << "Nodos de la estructura visitados: "
-         << db.getScoreIndex().getVisited() << "\n";
+    cout << "Consulta por score (Red-Black Tree): " << duration_cast<microseconds>(end - start).count() << " us\n";
+    cout << "Nodos de la estructura visitados: "<< db.getScoreIndex().getVisited() << "\n";
 
-    // Comparativa lineal para la misma consulta de Score
+    // Consulta por score para lineal.
+
     linearVisited = 0;
     start = high_resolution_clock::now();
 
@@ -159,19 +150,14 @@ void Benchmark::run(
     {
         linearVisited++;
         if(r.score == score)
-        {
-            // Encontrado linealmente
-        }
+        {}
     }
     end = high_resolution_clock::now();
 
-    cout << "Equality Query (Lineal): "
-         << duration_cast<microseconds>(end - start).count() << " us\n";
+    cout << "Consulta por score (Lineal): " << duration_cast<microseconds>(end - start).count() << " us\n";
     cout << "Registros revisados en Lineal: " << linearVisited << "\n\n";
 
     db.getScoreIndex().resetVisited();
-    cout << "==============================\n";
-
     auto [minIt, maxIt] = minmax_element(
     records.begin(),
     records.end(),
@@ -179,43 +165,33 @@ void Benchmark::run(
     {
         return a.score < b.score;
     }
-);
+    );
+
+    // Busqueda por rango para RBT
 
     double minScore = minIt->score;
+
     double maxScore = maxIt->score;
 
-    double low =
-        minScore +
-        (maxScore - minScore) * 0.25;
+    double low = minScore + (maxScore - minScore) * 0.25;
 
-    double high =
-        minScore +
-        (maxScore - minScore) * 0.75;
+    double high = minScore + (maxScore - minScore) * 0.75;
 
-    start =
-        high_resolution_clock::now();
+    start = high_resolution_clock::now();
 
     auto result = db.findBetween(low, high);
 
-    end =
-        high_resolution_clock::now();
+    end = high_resolution_clock::now();
 
-    cout
-        << "Range Query (RBT): "
-        << duration_cast<microseconds>(
-               end - start
-           ).count()
-        << " us\n";
+    cout << "Consulta por rango (RBT): " << duration_cast<microseconds>(end - start).count() << " us\n";
 
-    std::cout
-        << "Nodos visitados: "
-        << db.getScoreIndex()
-               .getVisited()
-        << "\n";
+    std::cout << "Nodos visitados: " << db.getScoreIndex().getVisited() << "\n";
+
+    // Busqueda por rango en lineal
+
     linearVisited = 0;
 
-    start =
-        high_resolution_clock::now();
+    start = high_resolution_clock::now();
 
     vector<Record> linearResult;
 
@@ -229,56 +205,34 @@ void Benchmark::run(
         }
     }
 
-    end =
-        high_resolution_clock::now();
+    end = high_resolution_clock::now();
 
-    cout
-        << "Range Query (Lineal): "
-        << duration_cast<microseconds>(
-               end - start
-           ).count()
-        << " us\n";
+    cout << "Consulta por rango (Lineal): " << duration_cast<microseconds>(end - start).count() << " us\n";
 
-    cout
-        << "Registros revisados: "
-        << linearVisited
-        << "\n\n";
+    cout << "Registros revisados: " << linearVisited << "\n\n";
 
-    db.getScoreIndex()
-    .resetVisited();
+    db.getScoreIndex().resetVisited();
 
-    start =
-    high_resolution_clock::now();
+    // Consulta de la mediana para RBT
 
-    double median =
-        db.medianScore();
+    start = high_resolution_clock::now();
 
-    end =
-        high_resolution_clock::now();
+    double median = db.medianScore();
 
-    cout
-        << "Mediana (RBT): "
-        << median
-        << " | "
-        << duration_cast<microseconds>(
-               end - start
-           ).count()
-        << " us\n";
+    end = high_resolution_clock::now();
+
+    cout << "Consulta por Mediana (RBT): " << median << " | " << duration_cast<microseconds>(end - start).count() << " us\n";
+
     vector<double> scores;
 
-    cout
-        << "Nodos visitados: "
-        << db.getScoreIndex()
-            .getVisited()
-        << "\n";
+    cout << "Nodos visitados: " << db.getScoreIndex().getVisited() << "\n";
 
 
-    scores.reserve(
-        records.size()
-    );
+    scores.reserve(records.size());
 
-    start =
-        high_resolution_clock::now();
+    // Consulta de la mediana para Lineal
+
+    start = high_resolution_clock::now();
 
     for(const auto& r : records)
     {
@@ -287,69 +241,41 @@ void Benchmark::run(
         );
     }
 
-    sort(
-        scores.begin(),
-        scores.end()
-    );
+    sort(scores.begin(),scores.end());
 
     double medianLinear;
 
-    int n =
-        scores.size();
+    int n = scores.size();
 
     if(n % 2 == 1)
     {
-        medianLinear =
-            scores[n/2];
+        medianLinear = scores[n/2];
     }
+
     else
     {
-        medianLinear =
-            (
-                scores[n/2]
-                +
-                scores[n/2 - 1]
-            ) / 2.0;
+        medianLinear = (scores[n/2] + scores[n/2 - 1]) / 2.0;
     }
 
-    end =
-        high_resolution_clock::now();
+    end = high_resolution_clock::now();
 
-    cout
-        << "Mediana (Lineal): "
-        << medianLinear
-        << " | "
-        << duration_cast<milliseconds>(
-               end - start
-           ).count()
-        << " ms\n";
+    cout << "Consulta por mediana (Lineal): " << medianLinear << " | " << duration_cast<microseconds>(end - start).count() << " ms\n";
 
-    db.getScoreIndex()
-    .resetVisited();
+    db.getScoreIndex().resetVisited();
 
-    start =
-        high_resolution_clock::now();
+    // Consulta para percentil usando RBT
 
-    double p90 =
-        db.percentileScore(90);
+    start = high_resolution_clock::now();
 
-    end =
-        high_resolution_clock::now();
+    double p35 = db.percentileScore(35);
 
-    cout
-        << "Percentil 90 (RBT): "
-        << p90
-        << " | "
-        << duration_cast<microseconds>(
-               end - start
-           ).count()
-        << " us\n";
+    end = high_resolution_clock::now();
 
-    cout
-        << "Nodos visitados: "
-        << db.getScoreIndex()
-               .getVisited()
-        << "\n";
+    cout << "Consulta por Percentil 35 (RBT): " << p35 << " | " << duration_cast<microseconds>(end - start).count() << " us\n";
+
+    cout << "Nodos visitados: " << db.getScoreIndex().getVisited() << "\n";
+
+    // Consulta para percentil usando Lineal
 
     vector<double> temp = scores;
 
@@ -357,78 +283,43 @@ void Benchmark::run(
 
     sort(temp.begin(), temp.end());
 
-    int pos = (90 * (temp.size() - 1)) / 100;
-    double p90Linear = temp[pos];
+    int pos = (35 * (temp.size() - 1)) / 100;
+
+    double p35Linear = temp[pos];
 
     end = high_resolution_clock::now();
 
-    cout
-        << "Percentil 90 (Lineal): "
-        << p90Linear
-        << " | "
-        << duration_cast<milliseconds>(
-               end - start
-           ).count()
-        << " ms\n\n";
+    cout << "Consulta por Percentil 35 (Lineal): " << p35Linear << " | " << duration_cast<microseconds>(end - start).count() << " us\n\n";
 
-    db.getScoreIndex()
-    .resetVisited();
+    // Consulta para cantidad de elementos en un rango determinado en RBT
 
-    start =
-        high_resolution_clock::now();
+    db.getScoreIndex().resetVisited();
 
-    int countIndex =
-        db.getScoreIndex()
-            .countRange(
-                low,
-                high
-            );
+    start = high_resolution_clock::now();
 
-    end =
-        high_resolution_clock::now();
+    int countIndex = db.getScoreIndex().countRange(low,high);
 
-    cout
-        << "Count Range (RBT): "
-        << countIndex
-        << " | "
-        << duration_cast<microseconds>(
-               end - start
-           ).count()
-        << " us\n";
+    end = high_resolution_clock::now();
 
-    cout
-        << "Nodos visitados: "
-        << db.getScoreIndex()
-               .getVisited()
-        << "\n";
+    cout << "Consulta para cantidad en un rango (RBT): " << countIndex << " | " << duration_cast<microseconds>(end - start).count() << " us\n";
+
+    cout << "Nodos visitados: " << db.getScoreIndex().getVisited() << "\n";
+
+    // Consulta para cantidad de elementos en un rango determinado en Lineal
 
     int countLinear = 0;
 
-    start =
-        high_resolution_clock::now();
+    start = high_resolution_clock::now();
 
     for(const auto& r : records)
     {
-        if(
-            r.score >= low &&
-            r.score <= high
-        )
-        {
+        if(r.score >= low && r.score <= high){
             countLinear++;
         }
     }
 
-    end =
-        high_resolution_clock::now();
+    end = high_resolution_clock::now();
 
-    cout
-        << "Count Range (Lineal): "
-        << countLinear
-        << " | "
-        << duration_cast<microseconds>(
-               end - start
-           ).count()
-        << " us\n\n";
-
+    cout << "Consulta para cantidad en un rango  (Lineal): " << countLinear << " | " << duration_cast<microseconds>(end - start).count() << " us\n\n";
 
 }
