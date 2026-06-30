@@ -24,3 +24,14 @@ Para **ejecutar** el proyecto una vez generado el binario:
 ``` 
 ./build/Proyecto_Final_AED
 ```
+## Fuente de datos utilizada
+
+Este proyecto utiliza los conjuntos de datos **MovieLens** desarrollados por **GroupLens Research** de la Universidad de Minnesota, con la finalidad de poder a prueba la estructura de datos creada. En particular, se emplearon las siguientes versiones:
+
+- **MovieLens 100K**: contiene aproximadamente **100,000 calificaciones** realizadas por usuarios sobre películas.
+- **MovieLens 1M**: contiene aproximadamente **1 millón de calificaciones**, proporcionando un conjunto de datos más amplio para el entrenamiento y la evaluación de los modelos de recomendación.
+
+Los datasets fueron obtenidos desde el sitio oficial de GroupLens Research:
+
+**MovieLens Datasets**  
+https://grouplens.org/datasets/movielens/
